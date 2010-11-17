@@ -6,6 +6,17 @@ procedure Server is
    LF : Character renames Ada.Characters.Latin_1.LF;
    CR : Character renames Ada.Characters.Latin_1.CR;
 
+   function Reply (S : String) return String is
+      Res : String (S'Range);
+      J : Integer := S'First;
+   begin
+      for I in reverse S'Range loop
+         Res (J) := S (I);
+         J := J + 1;
+      end loop;
+      return Res;
+   end Reply;
+
    task type Socket_Task (message : Integer) is
       entry start;             --  Entry Point Into The Task
    end Socket_Task;
@@ -94,6 +105,42 @@ procedure Server is
       GNAT.Sockets.Close_Socket (Server_Socket);
       GNAT.Sockets.Close_Socket (Client_Socket);
    end Socket_Task;
+
+   task type Echo is
+      entry Start (N_Sock : in GNAT.Sockets.Socket_Type);
+   end Echo;
+
+   task body Echo is
+      Sock : GNAT.Sockets.Socket_Type;
+      S : GNAT.Sockets.Stream_Access;
+   begin
+      --   In a more realistic example we could
+      --   perform some routine initialisation here
+      --   before rendezvous with the main task
+
+      accept Start (N_Sock : in GNAT.Sockets.Socket_Type) do
+         Sock := N_Sock;
+      end Start;
+
+      S := GNAT.Sockets.Stream (Sock);
+      Boolean'Write (S, True);    -- acknowledge connection
+
+      loop
+         declare
+            Str : String := String'Input (S);
+         begin
+            exit when Str = "quit";
+            String'Output (S, Reply (Str));
+         end;
+      end loop;
+
+      Ada.Text_IO.Put_Line ("Closing Connection");
+      GNAT.Sockets.Shutdown_Socket (Sock, GNAT.Sockets.Shut_Read_Write);
+
+   exception when others =>
+         Ada.Text_IO.Put_Line ("Connection Closed");
+         GNAT.Sockets.Close_Socket (Sock);
+   end Echo;
 
    Socket : Socket_Task (message => 1);
 begin
