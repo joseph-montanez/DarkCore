@@ -18,6 +18,8 @@ procedure Server is
       Server_Socket  : GNAT.Sockets.Socket_Type;
       Client_Socket  : GNAT.Sockets.Socket_Type;
       Client_Stream  : GNAT.Sockets.Stream_Access;
+
+      Data : String (1 .. 1024);
    begin
       accept start;            --  Entry Point Into The Task
 
@@ -41,7 +43,7 @@ procedure Server is
       end;
       begin
          Ada.Text_IO.Put_Line ("Listening...");
-         GNAT.Sockets. Listen_Socket (Server_Socket);
+         GNAT.Sockets.Listen_Socket (Server_Socket);
       exception when GNAT.Sockets.Socket_Error =>
          Ada.Text_IO.Put_Line (
             Ada.Text_IO.Standard_Error, "Listen_Socket raised Socket_Error"
@@ -53,12 +55,15 @@ procedure Server is
          GNAT.Sockets.Accept_Socket (
             Server_Socket, Client_Socket, Server_Address
          );
+         --   TODO: Spawn another task!
+         Ada.Text_IO.Put_Line ("GAH!...");
       exception when GNAT.Sockets.Socket_Error =>
          Ada.Text_IO.Put_Line (
             Ada.Text_IO.Standard_Error, "Accept_Socket raised Socket_Error"
          );
       end;
       Client_Stream := GNAT.Sockets.Stream (Client_Socket);
+      String'Read (Client_Stream, Data);
       Ada.Text_IO.Put_Line ("Streamed...");
       Ada.Text_IO.Put_Line ("Blocking...");
       delay 0.2;
