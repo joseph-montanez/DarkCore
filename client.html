@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <script type="text/javascript">
+      var socket = new WebSocket("ws://localhost:5876/demo");
+      
+      socket.onopen = function () {  
+         console.log("Socket has been opened!");  
+         socket.send("hello");
+      }; 
+      socket.onmessage = function (msg) {  
+         console.log(msg); //Awesome!  
+      };
+      socket.onclose = function () {
+         console.log("Socket has been closed");
+      };
+      
+   </script>
+</head>
+<body>
+   HTML5 Sockets
+</body>
+</html>
