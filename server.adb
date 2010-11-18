@@ -2,6 +2,9 @@ with Ada.Text_IO;
 with GNAT.Sockets;
 with Ada.Characters.Latin_1;
 
+with Ada.Streams;
+--   use type Ada.Streams.Stream_Element_Count;
+
 procedure Server is
    LF : Character renames Ada.Characters.Latin_1.LF;
    CR : Character renames Ada.Characters.Latin_1.CR;
@@ -13,6 +16,7 @@ procedure Server is
       for I in reverse S'Range loop
          Res (J) := S (I);
          J := J + 1;
+         Ada.Text_IO.Put_Line ("Output: " & Res);
       end loop;
       return Res;
    end Reply;
@@ -22,8 +26,12 @@ procedure Server is
    end Echo;
 
    task body Echo is
-      Sock : GNAT.Sockets.Socket_Type;
-      S : GNAT.Sockets.Stream_Access;
+      Sock   : GNAT.Sockets.Socket_Type;
+      Stream : GNAT.Sockets.Stream_Access;
+      Str    : String (1 .. 1024);
+      Offset : Ada.Streams.Stream_Element_Count;
+      Data   : Ada.Streams.Stream_Element_Array (1 .. 256);
+      use type Ada.Streams.Stream_Element_Offset;
    begin
       --   In a more realistic example we could
       --   perform some routine initialisation here
@@ -33,17 +41,30 @@ procedure Server is
          Sock := N_Sock;
       end Start;
 
-      S := GNAT.Sockets.Stream (Sock);
-      Boolean'Write (S, True);    -- acknowledge connection
+      Stream := GNAT.Sockets.Stream (Sock);
+      Boolean'Write (Stream, True);    -- acknowledge connection
+
+      Ada.Text_IO.Put_Line ("Reading...");
 
       loop
-         declare
-            Str : String := String'Input (S);
-         begin
-            exit when Str = "quit";
-            String'Output (S, Reply (Str));
-         end;
+         --   TODO: I dont want to read this all at once grr! must find another
+         --   way
+         Ada.Streams.Read (Stream.all, Data, Offset);
+         exit when Offset = 0;
+         for I in 1 .. Offset loop
+            Ada.Text_IO.Put (Character'Val (Data (I)));
+         end loop;
       end loop;
+
+      --   Str := String'Input (S);
+      --   Ada.Text_IO.Put_Line ("Output: " & Str);
+
+--      loop
+--            Ada.Text_IO.Put_Line ("Output: " & Str);
+--            String'Output (S, Reply (Str));
+--            delay 1.0;
+--            --   exit when Str = "quit";
+--      end loop;
 
       Ada.Text_IO.Put_Line ("Closing Connection");
       GNAT.Sockets.Shutdown_Socket (Sock, GNAT.Sockets.Shut_Read_Write);
@@ -54,7 +75,7 @@ procedure Server is
    end Echo;
 
    task type Socket_Task (message : Integer) is
-      entry start;             --  Entry Point Into The Task
+      entry Start;             --  Entry Point Into The Task
    end Socket_Task;
 
    task body Socket_Task is       --  Task Body Definition
@@ -68,7 +89,7 @@ procedure Server is
 
       Data : String (1 .. 1024);
    begin
-      accept start;            --  Entry Point Into The Task
+      accept Start;            --  Entry Point Into The Task
 
       Server_Address.Addr := GNAT.Sockets.Addresses (
          GNAT.Sockets.Get_Host_By_Name (server_host), 1
@@ -106,10 +127,9 @@ procedure Server is
             GNAT.Sockets.Accept_Socket (
                Server_Socket, Client_Socket, Server_Address
             );
-            --   TODO: Spawn another task!
-            Ada.Text_IO.Put_Line ("GAH!...");
+            --   Spawn another task!
             Slave := new Echo;
-            Slave.start (Client_Socket);
+            Slave.Start (Client_Socket);
          exception when GNAT.Sockets.Socket_Error =>
             Ada.Text_IO.Put_Line (
                Ada.Text_IO.Standard_Error, "Accept_Socket raised Socket_Error"
@@ -153,7 +173,7 @@ procedure Server is
    Socket : Socket_Task (message => 1);
 begin
    --   Stuff here
-   Socket.start;
+   Socket.Start;
    Ada.Text_IO.Put_Line ("I can do other stuff while the server is running!");
    --   Like simulate the world...
    loop
