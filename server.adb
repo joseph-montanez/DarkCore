@@ -1,9 +1,9 @@
 with Ada.Text_IO;
 with GNAT.Sockets;
 with Ada.Characters.Latin_1;
-
+with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded.Text_IO;
 with Ada.Streams;
---   use type Ada.Streams.Stream_Element_Count;
 
 procedure Server is
    LF : Character renames Ada.Characters.Latin_1.LF;
@@ -28,10 +28,11 @@ procedure Server is
    task body Echo is
       Sock   : GNAT.Sockets.Socket_Type;
       Stream : GNAT.Sockets.Stream_Access;
-      Str    : String (1 .. 1024);
+      Str    : Ada.Strings.Unbounded.Unbounded_String;
       Offset : Ada.Streams.Stream_Element_Count;
       Data   : Ada.Streams.Stream_Element_Array (1 .. 256);
       use type Ada.Streams.Stream_Element_Offset;
+      End_Of : Natural;
    begin
       --   In a more realistic example we could
       --   perform some routine initialisation here
@@ -47,24 +48,21 @@ procedure Server is
       Ada.Text_IO.Put_Line ("Reading...");
 
       loop
-         --   TODO: I dont want to read this all at once grr! must find another
-         --   way
-         Ada.Streams.Read (Stream.all, Data, Offset);
+         Ada.Streams.Read (Stream.all, Data (1 .. 1), Offset);
          exit when Offset = 0;
          for I in 1 .. Offset loop
-            Ada.Text_IO.Put (Character'Val (Data (I)));
+            Ada.Strings.Unbounded.Append (Str, Character'Val (Data (I)));
          end loop;
+         Ada.Strings.Unbounded.Text_IO.Put_Line (Str);
+
+         End_Of := Ada.Strings.Unbounded.Index (Str, CR & LF & CR & LF);
+         if End_Of /= 0 then
+            --   8 bytes are for handshake other 4 bytes are for \r\n\r\n
+            if End_Of + 12 = Ada.Strings.Unbounded.Length (Str) then
+               exit;
+            end if;
+         end if;
       end loop;
-
-      --   Str := String'Input (S);
-      --   Ada.Text_IO.Put_Line ("Output: " & Str);
-
---      loop
---            Ada.Text_IO.Put_Line ("Output: " & Str);
---            String'Output (S, Reply (Str));
---            delay 1.0;
---            --   exit when Str = "quit";
---      end loop;
 
       Ada.Text_IO.Put_Line ("Closing Connection");
       GNAT.Sockets.Shutdown_Socket (Sock, GNAT.Sockets.Shut_Read_Write);
