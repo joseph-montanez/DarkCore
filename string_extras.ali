@@ -1,0 +1,152 @@
+V "GNAT Lib v4.4"
+A -gnaty
+A -gnatv
+P SS ZX
+R nnnnnnnnnnnnnnnnnnnnnnvnnnnnvnnvnnnnnnvnnvnnnnnnnnnnnnnvnnnnvnnnnnnnnnnnnnnnn
+
+U string_extras%b	string_extras.adb	c8b0aa19 NE OO PK
+W ada%s			ada.ads			ada.ali
+W ada.characters%s	a-charac.ads		a-charac.ali
+W ada.characters.latin_1%s  a-chlat1.ads	a-chlat1.ali
+W ada.containers%s	a-contai.ads		a-contai.ali
+W ada.containers.indefinite_vectors%s
+W ada.streams%s		a-stream.ads		a-stream.ali
+W ada.strings%s		a-string.ads		a-string.ali
+W ada.strings.fixed%s	a-strfix.adb		a-strfix.ali
+W ada.strings.maps%s	a-strmap.adb		a-strmap.ali
+W ada.strings.unbounded%s  a-strunb.adb		a-strunb.ali
+W ada.strings.unbounded.text_io%s  a-suteio.adb	a-suteio.ali
+W ada.text_io%s		a-textio.adb		a-textio.ali
+W system.parameters%s	s-parame.adb		s-parame.ali
+
+U string_extras%s	string_extras.ads	f8d309bd EE OO PK
+W ada%s			ada.ads			ada.ali
+W ada.characters%s	a-charac.ads		a-charac.ali
+W ada.characters.latin_1%s  a-chlat1.ads	a-chlat1.ali
+W ada.containers%s	a-contai.ads		a-contai.ali
+W ada.containers.generic_array_sort%s
+W ada.containers.indefinite_vectors%s
+W ada.exceptions%s	a-except.adb		a-except.ali
+W ada.finalization%s	a-finali.adb		a-finali.ali
+W ada.finalization.list_controller%s  a-filico.adb  a-filico.ali
+W ada.streams%s		a-stream.ads		a-stream.ali
+W ada.strings%s		a-string.ads		a-string.ali
+W ada.strings.fixed%s	a-strfix.adb		a-strfix.ali
+W ada.strings.maps%s	a-strmap.adb		a-strmap.ali
+W ada.strings.unbounded%s  a-strunb.adb		a-strunb.ali
+W ada.strings.unbounded.text_io%s  a-suteio.adb	a-suteio.ali
+W ada.tags%s		a-tags.adb		a-tags.ali
+W ada.text_io%s		a-textio.adb		a-textio.ali
+W ada.unchecked_deallocation%s
+W system%s		system.ads		system.ali
+W system.finalization_implementation%s  s-finimp.adb  s-finimp.ali
+W system.finalization_root%s  s-finroo.adb	s-finroo.ali
+W system.secondary_stack%s  s-secsta.adb	s-secsta.ali
+W system.soft_links%s	s-soflin.adb		s-soflin.ali
+W system.standard_library%s  s-stalib.adb	s-stalib.ali
+W system.storage_elements%s  s-stoele.adb	s-stoele.ali
+W system.stream_attributes%s  s-stratt.adb	s-stratt.ali
+W system.strings.stream_ops%s  s-ststop.adb	s-ststop.ali
+
+D ada.ads		20070406091342 9c7dd3ea
+D a-charac.ads		20070912115821 506ce725
+D a-chlat1.ads		20070912115821 e9ee6d0a
+D a-contai.ads		20070406091342 7b35f559
+D a-cgarso.ads		20070406091342 943b3aae
+D a-coinve.ads		20090409232307 b79b3ba5
+D a-coinve.adb		20090409232307 fe29c5cc
+D a-except.ads		20090409232307 b54b55de
+D a-finali.ads		20090409232307 9eaacebd
+D a-filico.ads		20090409232307 9299732a
+D a-ioexce.ads		20070406091342 be0900a0
+D a-stream.ads		20090409232307 34aca5be
+D a-string.ads		20070406091342 87b4230b
+D a-strfix.ads		20070406091342 253a46ca
+D a-strmap.ads		20090409232307 5253a637
+D a-strunb.ads		20090409232307 f0549c04
+D a-suteio.ads		20090409232307 d857a771
+D a-tags.ads		20090409232307 bfa07446
+D a-textio.ads		20090409232307 fe8af46e
+D a-unccon.ads		20070406091342 51e09df2
+D a-uncdea.ads		20070406091342 dc667e6d
+D interfac.ads		20090409232307 a69cad5c
+D i-cstrea.ads		20090409232307 e1e064a9
+D string_extras.ads	20101128163042 33ead54a
+D string_extras.adb	20101128170124 3063a3a4
+D system.ads		20100912005340 df55302f
+D s-crtl.ads		20090409232307 997234a1
+D s-exctab.ads		20090409232307 5c1c61ae
+D s-ficobl.ads		20090409232307 8bb681e5
+D s-finimp.ads		20090409232307 9449f4cb
+D s-finroo.ads		20090409232307 1408f9d1
+D s-parame.ads		20090409232307 f32e56e9
+D s-secsta.ads		20090409232307 7bae3621
+D s-soflin.ads		20090409232307 0c6fd39d
+D s-stache.ads		20090409232307 257b3be8
+D s-stalib.ads		20090409232307 52b793d5
+D s-stoele.ads		20090409232307 ed966df3
+D s-stoele.adb		20090409232307 e9998c78
+D s-stratt.ads		20090409232307 fef7c1da
+D s-string.ads		20090409232307 04f2ee70
+D s-ststop.ads		20090409232307 b2197cc3
+D s-traent.ads		20090409232307 bd5f2753
+D s-unstyp.ads		20090409232307 c0f9fae5
+D s-wchcon.ads		20090409232307 ab028799
+X 1 ada.ads
+16K9*Ada 19e8 24|1r6 2r6 3r6 4r6 5r6 6r6 7r6 8r6 11r37 15r27 16r27 19r14
+. 25|1r6 2r6 3r6 4r6 5r6 6r6 7r6 8r6 13r14 17r16 22r22 28r26 30r27 31r19
+. 33r26 34r19 37r22 40r16 41r45 48r36
+X 2 a-charac.ads
+16K13*Characters 18e19 24|2r10 15r31 16r31 25|2r10
+X 3 a-chlat1.ads
+20K24*Latin_1 298e27 24|2w21 15r42 16r42 25|2w21
+37e4*LF{character} 24|15r50
+40e4*CR{character} 24|16r50
+X 4 a-contai.ads
+16K13*Containers 22e19 24|8r10 11r41 25|8r10
+X 6 a-coinve.ads
+38I9 Index_Type 24|12r7
+39+9 Element_Type 24|13r7
+43k24*Indefinite_Vectors 370e38 24|8w21 11r52 25|8w21
+53R9*Vector 24|20r31[11] 25|14r31[24|11] 15r38[24|11]
+186U14*Append 25|41r25[24|11] 48r16[24|11]
+188a7 New_Item{string} 25|41r33[24|11] 48r24[24|11]
+X 12 a-stream.ads
+36K13*Streams 69e16 24|5w10 25|5w10
+X 13 a-string.ads
+16K13*Strings 35e16 24|3r10 4r10 6r10 7r10 19r18 25|3r10 4r10 6r10 7r10 13r18
+. 17r20 22r26 28r30 30r31 31r23 33r30 34r23 37r26 40r20 41r49 48r40
+X 14 a-strfix.ads
+18K21*Fixed 242e22 24|6w18 25|6w18
+X 15 a-strmap.ads
+38K21*Maps 412e21 24|7w18 25|7w18
+X 16 a-strunb.ads
+39K21*Unbounded 428e26 24|3w18 4r18 19r26 25|3w18 4r18 13r26 17r28 22r34
+. 28r38 30r39 31r31 33r38 34r31 37r34 40r28 41r57 48r48
+42R9*Unbounded_String 395e14 24|19r36 25|13r36 17r38 28r48
+47V13*Length{natural} 25|37r44
+57V13*To_Unbounded_String{42R9} 25|30r49 33r48
+63V13*To_String{string} 25|41r67 48r58
+111V13*Slice{string} 25|31r41 34r41
+193V13*Index{natural} 25|22r44
+194r7 Source{42R9} 25|23r13
+195s7 Pattern{string} 25|24r13
+X 17 a-suteio.ads
+39K31*Text_IO 61e34 24|4w28 25|4w28 40r38
+55U14*Put_Line 25|40r46
+X 19 a-textio.ads
+48K13*Text_IO 506e16 24|1w10 25|1w10
+X 24 string_extras.ads
+10K9*String_Extras 21l5 21e18 25|10b14 52l5 52t18
+11K12*Segment_Container[6|43] 20r13 25|14r13 15r20
+15e4*LF=15:50{character}
+16e4*CR=16:50{character}
+17V13*Explode{6|53R9[11]} 18>7 19>7 25|11b13 51l8 51t15
+18s7 Delimiter{string} 25|12b7 24r24 36r33
+19r7 Data{16|42R9} 25|13b7 19r17
+X 25 string_extras.adb
+15r7 Segments{6|53R9[24|11]} 41m16 48m7 50r14
+16i7 Index_Of{natural} 20m7 21r13 22m10 26r13 31r59 36r22
+17r7 Source{16|42R9} 19m7 23r23 31r48 33m16 35r22 37r52 48r69
+28r16 Segment{16|42R9} 30m16 40r56 42r19
+
