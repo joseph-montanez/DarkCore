@@ -4,6 +4,8 @@ with Ada.Characters.Latin_1;
 with Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO;
 with Ada.Streams;
+with String_Extras;
+with Ada.Containers.Indefinite_Vectors;
 
 procedure Server is
    LF : Character renames Ada.Characters.Latin_1.LF;
@@ -53,16 +55,35 @@ procedure Server is
          for I in 1 .. Offset loop
             Ada.Strings.Unbounded.Append (Str, Character'Val (Data (I)));
          end loop;
-         Ada.Strings.Unbounded.Text_IO.Put_Line (Str);
 
          End_Of := Ada.Strings.Unbounded.Index (Str, CR & LF & CR & LF);
          if End_Of /= 0 then
+            Ada.Text_IO.Put_Line ("Exit Soon!");
             --   8 bytes are for handshake other 4 bytes are for \r\n\r\n
-            if End_Of + 12 = Ada.Strings.Unbounded.Length (Str) then
+            if End_Of + 11 = Ada.Strings.Unbounded.Length (Str) then
                exit;
             end if;
          end if;
       end loop;
+
+      declare
+         Header : String_Extras.Segment_Container.Vector;
+         Length : Ada.Containers.Count_Type;
+      begin
+         Header := String_Extras.Explode (
+            String_Extras.CR & String_Extras.LF,
+            Str
+         );
+         Length := Header.Length;
+         Ada.Text_IO.Put_Line ("Header Length: " &
+            Ada.Containers.Count_Type'Image (
+               Length
+            )
+         );
+         for i in Header.First_Index .. Header.Last_Index loop
+            Ada.Text_IO.Put_Line ("Line: " & Header.Element (i));
+         end loop;
+      end;
 
       Ada.Text_IO.Put_Line ("Closing Connection");
       GNAT.Sockets.Shutdown_Socket (Sock, GNAT.Sockets.Shut_Read_Write);

@@ -11,7 +11,11 @@ package String_Extras is
    package Segment_Container is new Ada.Containers.Indefinite_Vectors (
       Index_Type => Natural,
       Element_Type => String
-   );   
-   function Explode (Source : Ada.Strings.Unbounded.Unbounded_String) 
-      return Segment_Container.Vector;
-end Items;
+   );
+   LF : Character renames Ada.Characters.Latin_1.LF;
+   CR : Character renames Ada.Characters.Latin_1.CR;
+   function Explode (
+      Delimiter : String;
+      Data : Ada.Strings.Unbounded.Unbounded_String
+   ) return Segment_Container.Vector;
+end String_Extras;
