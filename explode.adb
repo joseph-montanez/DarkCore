@@ -5,12 +5,16 @@ with Ada.Strings.Unbounded.Text_IO;
 with Ada.Streams;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;
+with Ada.Containers.Indefinite_Vectors;
 
 procedure Explode is
-   LF : Character renames Ada.Characters.Latin_1.LF;
-   CR : Character renames Ada.Characters.Latin_1.CR;
-
-   Lines      : array (1 .. 64) of Ada.Strings.Unbounded.Unbounded_String;
+   package Segment_Container is new Ada.Containers.Indefinite_Vectors (
+      Index_Type => Natural,
+      Element_Type => String
+   );
+   LF         : Character renames Ada.Characters.Latin_1.LF;
+   CR         : Character renames Ada.Characters.Latin_1.CR;
+   Segments   : Segment_Container.Vector;
    Source     : Ada.Strings.Unbounded.Unbounded_String :=
       Ada.Strings.Unbounded.To_Unbounded_String (
          "GET /demo HTTP/1.1" & CR & LF &
@@ -24,22 +28,9 @@ procedure Explode is
          "" & CR & LF &
          "^n:ds[4U"
       );
---   Token_Set  : Ada.Strings.Maps.Character_Set := Ada.Strings.Maps.To_Set (
---      Sequence => LF & CR
---   );
-   First      : Positive;
    Last       : Natural;
-
 begin
---   Ada.Strings.Unbounded.Find_Token (
---      Source => Source,
---      Set => Token_Set,
---      Test => Ada.Strings.Inside,
---      First => First,
---      Last => Last
---   );
    Last  := 1;
-   First := 1;
    while Last /= 0 loop
       Last := Ada.Strings.Unbounded.Index (
          Source => Source,
@@ -58,9 +49,14 @@ begin
                )
             );
             Ada.Strings.Unbounded.Text_IO.Put_Line (Segment);
-            Lines (First) := Segment;
-            First := First + 1;
+            Segments.Append (New_Item => Ada.Strings.Unbounded.To_String (
+               Segment
+            ));
          end;
       end if;
+   end loop;
+
+   for i in Segments.First_Index .. Segments.Last_Index loop
+      Ada.Text_IO.Put_Line (Segments.Element (i));
    end loop;
 end Explode;
