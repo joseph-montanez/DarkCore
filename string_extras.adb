@@ -6,6 +6,7 @@ with Ada.Streams;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;
 with Ada.Containers.Indefinite_Vectors;
+with Ada.Containers.Hashed_Maps;
 
 package body String_Extras is
    function Explode (
@@ -49,4 +50,56 @@ package body String_Extras is
 
       return Segments;
    end Explode;
+
+   function Implode (
+      Delimiter : String;
+      Data      : Segment_Container.Vector;
+   ) return String is
+      i      : Integer;
+      Output : Ada.Strings.Unbounded.Unbounded_String;
+   begin
+      i := 0;
+      for i in Header.First_Index .. Header.Last_Index loop
+         Ada.Strings.Unbounded.Append (
+            Output, 
+            Ada.Strings.Unbounded.To_Unbounded_String (Header.Element (i))
+         );
+         if i /= Header.Last_Index then
+            Ada.Strings.Unbounded.Append (
+               Output, 
+               Ada.Strings.Unbounded.To_Unbounded_String (Delimiter)
+            );
+         end if;
+      end loop;
+      
+      return Output;
+   end Implode;
+   
+   function ParseHeader (Data : String) return Hashed is
+      Header       : String_Extras.Segment_Container.Vector;
+      Length       : Ada.Containers.Count_Type;
+      Index_Of_Key : Natural;
+      Line         : Ada.Strings.Unbounded.Unbounded_String;
+      Header_Map   : Http.Header.Map;
+   begin
+      Header := String_Extras.Explode (
+         CR & LF,
+         Str
+      );
+      
+      for i in Header.First_Index .. Header.Last_Index loop
+         Ada.Text_IO.Put_Line ("Line: " & Header.Element (i));
+         declare
+            Index_Of_Key : Natural;
+            Line : Ada.Strings.Unbounded.Unbounded_String;
+         begin
+            Ada.Strings.Unbounded.Append (Line, Header.Element (i));
+            Index_Of_Key := Ada.Strings.Unbounded.Index (
+               Line,
+               "Sec-WebSocket-Key1"
+            );
+            Ada.Text_IO.Put_Line (Natural'Image (Index_Of_Key));
+         end;
+      end loop;
+   end;
 end String_Extras;

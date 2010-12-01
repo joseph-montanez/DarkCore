@@ -6,6 +6,7 @@ with Ada.Strings.Unbounded.Text_IO;
 with Ada.Streams;
 with String_Extras;
 with Ada.Containers.Indefinite_Vectors;
+with Http;
 
 procedure Server is
    LF : Character renames Ada.Characters.Latin_1.LF;
@@ -58,8 +59,8 @@ procedure Server is
 
          End_Of := Ada.Strings.Unbounded.Index (Str, CR & LF & CR & LF);
          if End_Of /= 0 then
-            Ada.Text_IO.Put_Line ("Exit Soon!");
             --   8 bytes are for handshake other 4 bytes are for \r\n\r\n
+            --   However Ada indexes are already + 1, so minus 1 = 11
             if End_Of + 11 = Ada.Strings.Unbounded.Length (Str) then
                exit;
             end if;
@@ -67,22 +68,11 @@ procedure Server is
       end loop;
 
       declare
-         Header : String_Extras.Segment_Container.Vector;
-         Length : Ada.Containers.Count_Type;
+         Header : Http.Header.Map;
       begin
-         Header := String_Extras.Explode (
-            String_Extras.CR & String_Extras.LF,
-            Str
+         Header := String_Extras.ParseHeader (
+            Ada.Strings.Unbounded.To_String (Str)
          );
-         Length := Header.Length;
-         Ada.Text_IO.Put_Line ("Header Length: " &
-            Ada.Containers.Count_Type'Image (
-               Length
-            )
-         );
-         for i in Header.First_Index .. Header.Last_Index loop
-            Ada.Text_IO.Put_Line ("Line: " & Header.Element (i));
-         end loop;
       end;
 
       Ada.Text_IO.Put_Line ("Closing Connection");
