@@ -6,7 +6,7 @@
       
       socket.onopen = function () {  
          console.log("Socket has been opened!");  
-         socket.send("hello");
+         this.send("hello");
       }; 
       socket.onmessage = function (msg) {  
          console.log(msg); //Awesome!  
