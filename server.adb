@@ -36,6 +36,7 @@ procedure Server is
       Data   : Ada.Streams.Stream_Element_Array (1 .. 256);
       use type Ada.Streams.Stream_Element_Offset;
       End_Of : Natural;
+      Header : Http.Header.Object;
    begin
       --   In a more realistic example we could
       --   perform some routine initialisation here
@@ -67,13 +68,18 @@ procedure Server is
          end if;
       end loop;
 
-      declare
-         Header : Http.Header.Object;
-      begin
-         Header := String_Extras.ParseHeader (
-            Ada.Strings.Unbounded.To_String (Str)
-         );
-      end;
+      Ada.Text_IO.Put_Line ("Parsing Header Start");
+
+      Header := String_Extras.ParseHeader (
+         Ada.Strings.Unbounded.To_String (Str)
+      );
+
+      Ada.Text_IO.Put ("Value - Sec-WebSocket-Key1: ");
+      --   Some reason it silently fails here.
+      Ada.Text_IO.Put (Header.Get_Value ("Sec-WebSocket-Key1"));
+      Ada.Text_IO.Put_Line (" ");
+
+      Ada.Text_IO.Put_Line ("Parsing Header End");
 
       Ada.Text_IO.Put_Line ("Closing Connection");
       GNAT.Sockets.Shutdown_Socket (Sock, GNAT.Sockets.Shut_Read_Write);

@@ -38,7 +38,6 @@ package body String_Extras is
                      Ada.Strings.Unbounded.Length (Source)
                   )
                );
-               Ada.Strings.Unbounded.Text_IO.Put_Line (Segment);
                Segments.Append (New_Item => Ada.Strings.Unbounded.To_String (
                   Segment
                ));
@@ -53,59 +52,53 @@ package body String_Extras is
 
    function Implode (
       Delimiter : String;
-      Data      : Segment_Container.Vector;
+      Data      : Segment_Container.Vector
    ) return String is
       i      : Integer;
       Output : Ada.Strings.Unbounded.Unbounded_String;
    begin
       i := 0;
-      for i in Header.First_Index .. Header.Last_Index loop
+      for i in Data.First_Index .. Data.Last_Index loop
          Ada.Strings.Unbounded.Append (
-            Output, 
-            Ada.Strings.Unbounded.To_Unbounded_String (Header.Element (i))
+            Output,
+            Ada.Strings.Unbounded.To_Unbounded_String (Data.Element (i))
          );
-         if i /= Header.Last_Index then
+         if i /= Data.Last_Index then
             Ada.Strings.Unbounded.Append (
-               Output, 
+               Output,
                Ada.Strings.Unbounded.To_Unbounded_String (Delimiter)
             );
          end if;
       end loop;
-      
-      return Output;
+
+      return Ada.Strings.Unbounded.To_String (Output);
    end Implode;
-   
-   function ParseHeader (Data : String) return Hashed is
-      Header       : String_Extras.Segment_Container.Vector;
-      Length       : Ada.Containers.Count_Type;
-      Index_Of_Key : Natural;
-      Line         : Ada.Strings.Unbounded.Unbounded_String;
-      Header_Map   : Http.Header.Map;
+
+   function ParseHeader (Data : String) return Http.Header.Object is
+      Header        : Segment_Container.Vector;
+      Line          : Ada.Strings.Unbounded.Unbounded_String;
+      Header_Object : Http.Header.Object;
    begin
-      Header := String_Extras.Explode (
+      Header := Explode (
          CR & LF,
-         Str
+         Ada.Strings.Unbounded.To_Unbounded_String (Data)
       );
-      
+
       for i in Header.First_Index .. Header.Last_Index loop
-         Ada.Text_IO.Put_Line ("Line: " & Header.Element (i));
          declare
-            KeyVal       : String_Extras.Segment_Container.Vector;
+            KeyVal       : Segment_Container.Vector;
             Line         : Ada.Strings.Unbounded.Unbounded_String;
-            Key          : String (1 .. 256);
-            Value        : String (1 .. 1024);
          begin
             Ada.Strings.Unbounded.Append (Line, Header.Element (i));
-            KeyVal := String_Extras.Explode (
-               CR & LF,
+            KeyVal := Explode (
+               ":",
                Line
             );
-            Index_Of_Key := Ada.Strings.Unbounded.Index (
-               Line,
-               "Sec-WebSocket-Key1"
-            );
-            Ada.Text_IO.Put_Line (Natural'Image (Index_Of_Key));
+            Header_Object.Set_Key (KeyVal.Element (0));
+            KeyVal.Delete_First;
+            Header_Object.Set_Value (Implode (":", KeyVal));
          end;
       end loop;
-   end;
+      return Header_Object;
+   end ParseHeader;
 end String_Extras;

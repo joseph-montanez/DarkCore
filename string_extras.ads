@@ -14,7 +14,7 @@ package String_Extras is
       Index_Type => Natural,
       Element_Type => String
    );
-   
+
    LF : Character renames Ada.Characters.Latin_1.LF;
    CR : Character renames Ada.Characters.Latin_1.CR;
    function Explode (

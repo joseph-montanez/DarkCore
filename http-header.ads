@@ -6,12 +6,12 @@ package Http.Header is
       Element_Type => String
    );
 
-   type Object is record
+   type Object is tagged record
       Keys   : Header_Container.Vector;
       Values : Header_Container.Vector;
    end record;
 
-   function Get_Key (Self : Object; Key : String) return String;
+   function Get_Key_Index (Self : Object; Key : String) return Natural;
 
    function Get_Value (Self : Object; Key : String) return String;
 
