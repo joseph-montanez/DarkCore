@@ -7,7 +7,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Maps;
 with Ada.Containers.Indefinite_Vectors;
 with Ada.Containers.Hashed_Maps;
-with Http;
+with Http.Header;
 
 package String_Extras is
    package Segment_Container is new Ada.Containers.Indefinite_Vectors (
@@ -25,5 +25,5 @@ package String_Extras is
       Delimiter : String;
       Data : Segment_Container.Vector
    ) return String;
-   function ParseHeader (Data : String) return Http.Header.Map;
+   function ParseHeader (Data : String) return Http.Header.Object;
 end String_Extras;

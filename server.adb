@@ -6,7 +6,7 @@ with Ada.Strings.Unbounded.Text_IO;
 with Ada.Streams;
 with String_Extras;
 with Ada.Containers.Indefinite_Vectors;
-with Http;
+with Http.Header;
 
 procedure Server is
    LF : Character renames Ada.Characters.Latin_1.LF;
@@ -68,7 +68,7 @@ procedure Server is
       end loop;
 
       declare
-         Header : Http.Header.Map;
+         Header : Http.Header.Object;
       begin
          Header := String_Extras.ParseHeader (
             Ada.Strings.Unbounded.To_String (Str)

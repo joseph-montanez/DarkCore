@@ -90,10 +90,16 @@ package body String_Extras is
       for i in Header.First_Index .. Header.Last_Index loop
          Ada.Text_IO.Put_Line ("Line: " & Header.Element (i));
          declare
-            Index_Of_Key : Natural;
-            Line : Ada.Strings.Unbounded.Unbounded_String;
+            KeyVal       : String_Extras.Segment_Container.Vector;
+            Line         : Ada.Strings.Unbounded.Unbounded_String;
+            Key          : String (1 .. 256);
+            Value        : String (1 .. 1024);
          begin
             Ada.Strings.Unbounded.Append (Line, Header.Element (i));
+            KeyVal := String_Extras.Explode (
+               CR & LF,
+               Line
+            );
             Index_Of_Key := Ada.Strings.Unbounded.Index (
                Line,
                "Sec-WebSocket-Key1"
