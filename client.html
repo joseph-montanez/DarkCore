@@ -100,49 +100,37 @@
         var centerCenter = [x     ,y];
         var centerRight  = [x + 32,y];
         
-        bb1 = getBoundingBox(topLeft, 16);
-        bb2 = getBoundingBox(topCenter, 16);
-        bb3 = getBoundingBox(topRight, 16);
+        var bottomLeft     = [x - 32,y + 32];
+        var bottomCenter   = [x - 0,y + 32];
+        var bottomRight    = [x + 32,y + 32];
         
-        bb4 = getBoundingBox(centerLeft, 16);
-        bb5 = getBoundingBox(centerCenter, 16);
-        bb6 = getBoundingBox(centerRight, 16);
         
-        bb7 = getBoundingBox([x - 32,y + 32], 16);
-        bb8 = getBoundingBox([x - 0,y + 32], 16);
-        bb9 = getBoundingBox([x + 32,y + 32], 16);
+        var tiles = [
+            //-- Top Row
+            Darkcore.getBoundingBox(topLeft, 16),
+            Darkcore.getBoundingBox(topCenter, 16),
+            Darkcore.getBoundingBox(topRight, 16),
+            //-- Center Row
+            Darkcore.getBoundingBox(centerLeft, 16),
+            Darkcore.getBoundingBox(centerCenter, 16),
+            Darkcore.getBoundingBox(centerRight, 16),
+            //-- Bottom Row
+            Darkcore.getBoundingBox(bottomLeft, 16),
+            Darkcore.getBoundingBox(bottomCenter, 16),
+            Darkcore.getBoundingBox(bottomRight, 16)
+        ];
         
         //-- I have to reduce the mobs' size by one or else it touches 
         // everything.
-        bb0 = getBoundingBox(player.pos, 15);
-        var hits = [];
+        bb0 = Darkcore.getBoundingBox(player.pos, 15);
         
-        if(Collision_Box_In_Box(bb0, bb1)) {
-            hits.push(bb1);
-        }
-        if(Collision_Box_In_Box(bb0, bb2)) {
-            hits.push(bb2);
-        }
-        if(Collision_Box_In_Box(bb0, bb3)) {
-            hits.push(bb3);
-        }
-        if(Collision_Box_In_Box(bb0, bb4)) {
-            hits.push(bb4);
-        }
-        if(Collision_Box_In_Box(bb0, bb5)) {
-            hits.push(bb5);
-        }
-        if(Collision_Box_In_Box(bb0, bb6)) {
-            hits.push(bb6);
-        }
-        if(Collision_Box_In_Box(bb0, bb7)) {
-            hits.push(bb7);
-        }
-        if(Collision_Box_In_Box(bb0, bb8)) {
-            hits.push(bb8);
-        }
-        if(Collision_Box_In_Box(bb0, bb9)) {
-            hits.push(bb9);
+        //-- Iterate though the tiles and check against the object
+        var hits = [];
+        for (var i = 0; i < tiles.length; i++) {
+            var tile = tiles[i];
+            if (Darkcore.isBoxInBox(bb0,tile)) {
+                hits.push(tile);
+            }
         }
         
         for(var i = 0; i < hits.length; i++) {
@@ -151,6 +139,7 @@
             var tileId = Darkcore.getTile({
                 pos: hitPos
             });
+            //-- If the tile index is zero, it water, there for blocked!
             if(tileId === 0) {
                 return true
             }
@@ -160,8 +149,12 @@
     }
     
     Darkcore.getTilePosition = function (pos) {
-        var x = Math.round((pos[0] - 16) / 32);
-        var y = Math.round((pos[1] - 16) / 32);
+        //-- We use a 32x32 tile for now
+        var tileLength = 32;
+        var tileHalf = tileLength / 2;
+        
+        var x = Math.round((pos[0] - tileHalf) / tileLength);
+        var y = Math.round((pos[1] - tileHalf) / tileLength);
         
         return [x, y];
     }
@@ -171,8 +164,8 @@
         var x = tpos[0];
         var y = tpos[1];
         
-        b1 = getBoundingBox(player.pos, 32);
-        b2 = getBoundingBox(player.pos, 32);
+        b1 = Darkcore.getBoundingBox(player.pos, 32);
+        b2 = Darkcore.getBoundingBox(player.pos, 32);
         
         var tile = 0;
         if(typeof map[x] !== 'undefined') {
@@ -184,7 +177,7 @@
         return tile;
     };
     
-    function getBoundingBox(pos, size) {
+    Darkcore.getBoundingBox = function (pos, size) {
         var x, y, w, h, half_width, half_height;
         x = pos[0] - size;
         x = x > 0 ? x : 0;
@@ -208,7 +201,7 @@
         }
     }
         
-    function Collision_Box_In_Box (b1, b2) {
+    Darkcore.isBoxInBox = function (b1, b2) {
         var left1, left2;
         var right1, right2;
         var top1, top2;
@@ -248,8 +241,8 @@
             cxt.closePath();
             this.last_pos = this.pos;
         },    
-        getBoundingBox: function () {
-            return getBoundingBox(this.pos, this.size);
+        Darkcore.getBoundingBox: function () {
+            return Darkcore.getBoundingBox(this.pos, this.size);
         },
         move: function (x, y) {
             var tileId, tilePos, modX, modY, modChar, halfSize, pos;
@@ -339,11 +332,14 @@
                 var tile = map[x][y];
                 var img = new Image(32, 32);
                 img.src = tile + '.png';
+                //-- Render the tile
                 cxt.drawImage(img, x * 32, y * 32);
+                //-- Render the lines of the tile
                 Darkcore.drawLine((x * 32), (y * 32), (x * 32) + 32, (y * 32));
                 Darkcore.drawLine((x * 32), (y * 32), (x * 32), (y * 32) + 32);
             }
         }
+        //-- Render the player after the tile
         player.render(cxt);
     }).periodical(50);
     </script>
