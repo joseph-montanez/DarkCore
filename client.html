@@ -88,23 +88,27 @@
         |_|_|_|  |-1,_ 1|0,_ 1|1,_ 1|
         
         */
+        var tileLength = 32;
         var pos = Darkcore.getTilePosition(player.pos);
-        var x = pos[0] * 32;
-        var y = pos[1] * 32;
         
-        var topLeft   = [x - 32,y - 32];
-        var topCenter = [x,     y - 32];
-        var topRight  = [x + 32,y - 32];
+        //-- The start X-axis and Y-axis of tiles around object
+        var x = pos[0] * tileLength;
+        var y = pos[1] * tileLength;
         
-        var centerLeft   = [x - 32,y];
-        var centerCenter = [x     ,y];
-        var centerRight  = [x + 32,y];
+        //-- Top Row
+        var topLeft        = [x - tileLength,y - tileLength];
+        var topCenter      = [x,             y - tileLength];
+        var topRight       = [x + tileLength,y - tileLength];
+        //-- Center Row
+        var centerLeft     = [x - tileLength,y];
+        var centerCenter   = [x,             y];
+        var centerRight    = [x + tileLength,y];
+        //-- Bottom Row
+        var bottomLeft     = [x - tileLength,y + tileLength];
+        var bottomCenter   = [x,             y + tileLength];
+        var bottomRight    = [x + tileLength,y + tileLength];
         
-        var bottomLeft     = [x - 32,y + 32];
-        var bottomCenter   = [x - 0,y + 32];
-        var bottomRight    = [x + 32,y + 32];
-        
-        
+        //-- Get the bound box of each tile
         var tiles = [
             //-- Top Row
             Darkcore.getBoundingBox(topLeft, 16),
@@ -141,7 +145,7 @@
             });
             //-- If the tile index is zero, it water, there for blocked!
             if(tileId === 0) {
-                return true
+                return true;
             }
         }
         
@@ -251,28 +255,18 @@
             
             pos = [this.pos[0], this.pos[1]];
             
-            //-- I need to fix this, the players position is always bottom right
-            // and not center, grr.
-            //pos[0] -= halfSize;
-            //pos[1] -= halfSize;
-            
             modX = pos[0];
             modY = pos[1];
             if(x != 0) {
-                //modX = pos[0] + ((x > 0) ? -1 * halfSize : halfSize) + x;
                 modX = pos[0] + x;
             }
             if(y != 0) {
-                //modY = pos[1] + ((y > 0) ? -1 * halfSize : halfSize) + y;
                 modY = pos[1] + y;
             }
     
             modChar = {
                 pos: [modX, modY]
             };
-    
-            //tileId = Darkcore.getTile(modChar);
-            //tilePos = Darkcore.getTilePosition([modX, modY]);
             
             //-- If the mob is not running into a blocked item, really do move 
             // them!
@@ -308,8 +302,6 @@
     
     
     $(window).addEvent('keydown', function (evt) {
-        //console.log(evt);
-        
         if(evt.key === 'right') {
             player.move(4, 0);
             evt.stop();
@@ -323,7 +315,6 @@
             player.move(0, 4);
             evt.stop();
         }
-        
     });
     
     (function () {
