@@ -1,23 +1,351 @@
-<!DOCTYPE html>
-<html>
-<head>
-   <script type="text/javascript">
-      var socket = new WebSocket("ws://localhost:5876/demo");
-      
-      socket.onopen = function () {  
-         console.log("Socket has been opened!");  
-         this.send("hello");
-      }; 
-      socket.onmessage = function (msg) {  
-         console.log(msg); //Awesome!  
-      };
-      socket.onclose = function () {
-         console.log("Socket has been closed");
-      };
-      
-   </script>
+<!DOCTYPE html> 
+<html lang="en" debug="true"> 
+<head> 
+   <meta charset="utf-8" />    
+	<script type="text/javascript" src="mootools-core.js"></script> 
+	<script type="text/javascript" src="mootools-more.js"></script> 
+	<!-- <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script> -->
+	
+	<style type="text/css">
+	    * {
+	        font-family: sans;
+	    }
+	    
+	    #controls {
+	        float: left;
+	        background: #ddd;
+	    }
+	    
+	    #controls .outline {
+	        border: 1px solid #fff;
+	        height: 100%;
+	        padding: 5px;
+	    }
+	</style>
 </head>
-<body>
-   HTML5 Sockets
+<body id="body"> 
+    <div id="log"></div>
+    <script type="text/javascript">
+    var map = [
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+    ];
+    
+    if(typeof Darkcore === 'undefined') {
+        Darkcore = {};
+    }
+    
+    Darkcore.addCanvas = function (width, height) {
+        var canvas = new Element('canvas', {
+            'width': Math.abs(width),
+            'height': Math.abs(height),
+            'position': 'absolute'
+        });
+        
+        return canvas;
+    }
+    
+    Darkcore.drawLine = function (fromX, fromY, toX, toY) {
+        // Draw the shape
+        cxt.beginPath();
+        cxt.strokeStyle = '#000';
+        cxt.lineWidth = 1.0;
+        cxt.moveTo(fromX, fromY);
+        cxt.lineTo(toX, toY);
+        cxt.stroke();
+        cxt.closePath();
+    };
+    
+    Darkcore.drawCircle = function (x, y, radius, panel) {
+        var canvas = Darkcore.addCanvas(radius * 2, radius * 2);
+        canvas.inject($(panel));
+        var context = canvas.getContext('2d');
+        
+        context.beginPath();
+        context.arc(radius, radius, radius, 0, Math.PI*2);
+        context.fill();
+        
+        return canvas;
+    };
+    
+    Darkcore.clear = function (rect) {
+        cxt.clearRect(rect[0],rect[1],rect[2],rect[3]);
+    };
+    
+    Darkcore.isBlocked = function (player) {
+        /*
+         _____    __________________
+        |_|_|_|  |-1,_-1|0,_-1|1,_-1|
+        |_|_|_|  |-1,_ 0|0,_ 0|1,_ 0|
+        |_|_|_|  |-1,_ 1|0,_ 1|1,_ 1|
+        
+        */
+        var pos = Darkcore.getTilePosition(player.pos);
+        var x = pos[0] * 32;
+        var y = pos[1] * 32;
+        
+        var topLeft   = [x - 32,y - 32];
+        var topCenter = [x,     y - 32];
+        var topRight  = [x + 32,y - 32];
+        
+        var centerLeft   = [x - 32,y];
+        var centerCenter = [x     ,y];
+        var centerRight  = [x + 32,y];
+        
+        bb1 = getBoundingBox(topLeft, 16);
+        bb2 = getBoundingBox(topCenter, 16);
+        bb3 = getBoundingBox(topRight, 16);
+        
+        bb4 = getBoundingBox(centerLeft, 16);
+        bb5 = getBoundingBox(centerCenter, 16);
+        bb6 = getBoundingBox(centerRight, 16);
+        
+        bb7 = getBoundingBox([x - 32,y + 32], 16);
+        bb8 = getBoundingBox([x - 0,y + 32], 16);
+        bb9 = getBoundingBox([x + 32,y + 32], 16);
+        
+        //-- I have to reduce the mobs' size by one or else it touches 
+        // everything.
+        bb0 = getBoundingBox(player.pos, 15);
+        var hits = [];
+        
+        if(Collision_Box_In_Box(bb0, bb1)) {
+            hits.push(bb1);
+        }
+        if(Collision_Box_In_Box(bb0, bb2)) {
+            hits.push(bb2);
+        }
+        if(Collision_Box_In_Box(bb0, bb3)) {
+            hits.push(bb3);
+        }
+        if(Collision_Box_In_Box(bb0, bb4)) {
+            hits.push(bb4);
+        }
+        if(Collision_Box_In_Box(bb0, bb5)) {
+            hits.push(bb5);
+        }
+        if(Collision_Box_In_Box(bb0, bb6)) {
+            hits.push(bb6);
+        }
+        if(Collision_Box_In_Box(bb0, bb7)) {
+            hits.push(bb7);
+        }
+        if(Collision_Box_In_Box(bb0, bb8)) {
+            hits.push(bb8);
+        }
+        if(Collision_Box_In_Box(bb0, bb9)) {
+            hits.push(bb9);
+        }
+        
+        for(var i = 0; i < hits.length; i++) {
+            var hitPos = [hits[i].x, hits[i].y];
+            var tilePos = Darkcore.getTilePosition(hitPos);
+            var tileId = Darkcore.getTile({
+                pos: hitPos
+            });
+            if(tileId === 0) {
+                return true
+            }
+        }
+        
+        return false;
+    }
+    
+    Darkcore.getTilePosition = function (pos) {
+        var x = Math.round((pos[0] - 16) / 32);
+        var y = Math.round((pos[1] - 16) / 32);
+        
+        return [x, y];
+    }
+    
+    Darkcore.getTile = function (player) {
+        var tpos = Darkcore.getTilePosition(player.pos);
+        var x = tpos[0];
+        var y = tpos[1];
+        
+        b1 = getBoundingBox(player.pos, 32);
+        b2 = getBoundingBox(player.pos, 32);
+        
+        var tile = 0;
+        if(typeof map[x] !== 'undefined') {
+            if(typeof map[x][y] !== 'undefined') {
+                tile = map[x][y];
+            }
+        }
+        
+        return tile;
+    };
+    
+    function getBoundingBox(pos, size) {
+        var x, y, w, h, half_width, half_height;
+        x = pos[0] - size;
+        x = x > 0 ? x : 0;
+
+        y = pos[1] - size;
+        y = y > 0 ? y : 0;
+
+        w = (pos[0] + size) - x;
+        h = (pos[1] + size) - y;
+
+        half_width  = w !== 0 ? w / 2 : 0;
+        half_height = h !== 0 ? h / 2 : 0;
+
+        return {
+            x: x,
+            y: y,
+            w: w,
+            h: h,
+            half_width: half_width,
+            half_height: half_height
+        }
+    }
+        
+    function Collision_Box_In_Box (b1, b2) {
+        var left1, left2;
+        var right1, right2;
+        var top1, top2;
+        var bottom1, bottom2;
+            
+        left1 = b1.x;
+        left2 = b2.x;
+        right1 = b1.x + b1.w;
+        right2 = b2.x + b2.w;
+        top1 = b1.y;
+        top2 = b2.y;
+        bottom1 = b1.y + b1.h;
+        bottom2 = b2.y + b2.h;
+
+        if (bottom1 < top2) return false;
+        if (top1 > bottom2) return false;
+
+        if (right1 < left2) return false;
+        if (left1 > right2) return false;
+
+        return true;
+
+    }
+    
+    
+    var Tile = new Class({});
+    
+    var Character = new Class({
+        last_pos: [0, 0],
+        pos: [7 * 32, 5 * 32],
+        size: 32,
+        render: function (cxt) {
+            cxt.beginPath();
+            cxt.fillStyle = 'rgb(0,0,0)';
+            cxt.arc(this.pos[0] - 16, this.pos[1] - 16, 16, 0, 360, false);
+            cxt.fill();
+            cxt.closePath();
+            this.last_pos = this.pos;
+        },    
+        getBoundingBox: function () {
+            return getBoundingBox(this.pos, this.size);
+        },
+        move: function (x, y) {
+            var tileId, tilePos, modX, modY, modChar, halfSize, pos;
+            
+            halfSize = this.size / 2;
+            
+            pos = [this.pos[0], this.pos[1]];
+            
+            //-- I need to fix this, the players position is always bottom right
+            // and not center, grr.
+            //pos[0] -= halfSize;
+            //pos[1] -= halfSize;
+            
+            modX = pos[0];
+            modY = pos[1];
+            if(x != 0) {
+                //modX = pos[0] + ((x > 0) ? -1 * halfSize : halfSize) + x;
+                modX = pos[0] + x;
+            }
+            if(y != 0) {
+                //modY = pos[1] + ((y > 0) ? -1 * halfSize : halfSize) + y;
+                modY = pos[1] + y;
+            }
+    
+            modChar = {
+                pos: [modX, modY]
+            };
+    
+            //tileId = Darkcore.getTile(modChar);
+            //tilePos = Darkcore.getTilePosition([modX, modY]);
+            
+            //-- If the mob is not running into a blocked item, really do move 
+            // them!
+            if(!Darkcore.isBlocked(modChar)) {
+                this.pos[0] += x;
+                this.pos[1] += y;
+            }
+        }
+    });
+    
+    /*
+    window.addEvent('domready', function () {
+        var size = $(window).getScrollSize();
+    });
+    */
+    
+    Darkcore.canvas = Darkcore.addCanvas(640, 480);
+    Darkcore.canvas.inject($(document.body));
+    Darkcore.canvas.addEvent('click', function (evt) {
+        var coords = this.getCoordinates();
+        var x = evt.client.x - coords.left;
+        var y = evt.client.y - coords.top;
+        
+        var tpos = Darkcore.getTilePosition([x, y]);
+        var tx = tpos[0];
+        var ty = tpos[1];
+        
+        console.log([x, y], tx, ty);
+    });
+    Darkcore.context = Darkcore.canvas.getContext('2d');
+    cxt = Darkcore.context;
+    player = new Character();
+    
+    
+    $(window).addEvent('keydown', function (evt) {
+        //console.log(evt);
+        
+        if(evt.key === 'right') {
+            player.move(4, 0);
+            evt.stop();
+        } else if(evt.key === 'left') {
+            player.move(-4, 0);
+            evt.stop();
+        } else if(evt.key === 'up') {
+            player.move(0, -4);
+            evt.stop();
+        } else if(evt.key === 'down') {
+            player.move(0, 4);
+            evt.stop();
+        }
+        
+    });
+    
+    (function () {
+        for (var x = 0; x < map.length; x++) {
+            for (var y = 0; y < map[x].length; y++) {
+                var tile = map[x][y];
+                var img = new Image(32, 32);
+                img.src = tile + '.png';
+                cxt.drawImage(img, x * 32, y * 32);
+                Darkcore.drawLine((x * 32), (y * 32), (x * 32) + 32, (y * 32));
+                Darkcore.drawLine((x * 32), (y * 32), (x * 32), (y * 32) + 32);
+            }
+        }
+        player.render(cxt);
+    }).periodical(50);
+    </script>
 </body>
 </html>
