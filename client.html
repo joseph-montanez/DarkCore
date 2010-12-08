@@ -1,7 +1,8 @@
 <!DOCTYPE html> 
 <html lang="en" debug="true"> 
 <head> 
-   <meta charset="utf-8" />    
+    <meta charset="utf-8" />    
+    <meta name="viewport" content="width=device-width" />
 	<script type="text/javascript" src="mootools-core.js"></script> 
 	<script type="text/javascript" src="mootools-more.js"></script> 
 	<!-- <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script> -->
@@ -10,21 +11,18 @@
 	    * {
 	        font-family: sans;
 	    }
-	    
-	    #controls {
-	        float: left;
-	        background: #ddd;
+	    body {
+	        margin: 0px;
+	        padding: 0px;
 	    }
-	    
-	    #controls .outline {
-	        border: 1px solid #fff;
-	        height: 100%;
-	        padding: 5px;
+	    canvas:focus, canvas:active {
+	        border: none;
+	        outline: none;
 	    }
 	</style>
 </head>
-<body id="body"> 
-    <div id="log"></div>
+<body id="body" style="width: 320px; overflow: hidden"> 
+    
     <script type="text/javascript">
     var map = [
         [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -38,6 +36,8 @@
         [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
         [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
     ];
+    
+    var dirtRects = false;
     
     if(typeof Darkcore === 'undefined') {
         Darkcore = {};
@@ -80,7 +80,7 @@
         cxt.clearRect(rect[0],rect[1],rect[2],rect[3]);
     };
     
-    Darkcore.isBlocked = function (player) {
+    Darkcore.getTouchedTiles = function (player) {
         /*
          _____    __________________
         |_|_|_|  |-1,_-1|0,_-1|1,_-1|
@@ -137,6 +137,18 @@
             }
         }
         
+        return hits;
+    }
+    
+    Darkcore.isBlocked = function (player, groundTiles) {
+        var hits = [];
+        if (typeof groundTiles === 'undefined') {
+            hits = Darkcore.getTouchedTiles(player);
+        } else {
+            hits = groundTiles;
+        }
+        
+        //-- Iterate through the hits and check for zero index tileId
         for(var i = 0; i < hits.length; i++) {
             var hitPos = [hits[i].x, hits[i].y];
             var tilePos = Darkcore.getTilePosition(hitPos);
@@ -237,6 +249,7 @@
         last_pos: [0, 0],
         pos: [7 * 32, 5 * 32],
         size: 32,
+        walkingTo: false,
         render: function (cxt) {
             cxt.beginPath();
             cxt.fillStyle = 'rgb(0,0,0)';
@@ -244,6 +257,11 @@
             cxt.fill();
             cxt.closePath();
             this.last_pos = this.pos;
+            
+            var hits = Darkcore.getTouchedTiles(this);
+            for (var i = 0; i < hits.length; i++) {
+                dirtRects.include(hits[i]);
+            }
         },    
         getBoundingBox: function () {
             return Darkcore.getBoundingBox(this.pos, this.size);
@@ -268,11 +286,19 @@
                 pos: [modX, modY]
             };
             
+            var hits = Darkcore.getTouchedTiles(modChar);
+            
             //-- If the mob is not running into a blocked item, really do move 
             // them!
-            if(!Darkcore.isBlocked(modChar)) {
+            if(!Darkcore.isBlocked(modChar, hits)) {
                 this.pos[0] += x;
                 this.pos[1] += y;
+                for (var i = 0; i < hits.length; i++) {
+                    dirtRects.include(hits[i]);
+                }
+                return true;
+            } else {
+                return false;
             }
         }
     });
@@ -283,9 +309,9 @@
     });
     */
     
-    Darkcore.canvas = Darkcore.addCanvas(640, 480);
+    Darkcore.canvas = Darkcore.addCanvas(320, 320);
     Darkcore.canvas.inject($(document.body));
-    Darkcore.canvas.addEvent('click', function (evt) {
+    function clickTo (evt) {
         var coords = this.getCoordinates();
         var x = evt.client.x - coords.left;
         var y = evt.client.y - coords.top;
@@ -294,45 +320,121 @@
         var tx = tpos[0];
         var ty = tpos[1];
         
-        console.log([x, y], tx, ty);
-    });
+        if(!Darkcore.isBlocked({
+            pos: [tx * 32, ty * 32]
+        })) {
+            player.walkingTo = [tx * 32 + 16, ty * 32 + 16];
+        }
+    }
+    Darkcore.canvas.addEvent('click', clickTo);
+    Darkcore.canvas.addEvent('touchmove', clickTo);
+    
+    
     Darkcore.context = Darkcore.canvas.getContext('2d');
     cxt = Darkcore.context;
     player = new Character();
     
+    var keysPressed = [];
     
     $(window).addEvent('keydown', function (evt) {
-        if(evt.key === 'right') {
-            player.move(4, 0);
-            evt.stop();
-        } else if(evt.key === 'left') {
-            player.move(-4, 0);
-            evt.stop();
-        } else if(evt.key === 'up') {
-            player.move(0, -4);
-            evt.stop();
-        } else if(evt.key === 'down') {
-            player.move(0, 4);
-            evt.stop();
-        }
+        keysPressed.include(evt.key);
     });
     
+    $(window).addEvent('keyup', function (evt) {
+        keysPressed.erase(evt.key);
+    });
+    
+    //-- Logic Loop
     (function () {
-        for (var x = 0; x < map.length; x++) {
-            for (var y = 0; y < map[x].length; y++) {
-                var tile = map[x][y];
-                var img = new Image(32, 32);
-                img.src = tile + '.png';
-                //-- Render the tile
-                cxt.drawImage(img, x * 32, y * 32);
-                //-- Render the lines of the tile
-                Darkcore.drawLine((x * 32), (y * 32), (x * 32) + 32, (y * 32));
-                Darkcore.drawLine((x * 32), (y * 32), (x * 32), (y * 32) + 32);
+        if(player.walkingTo === false) {
+            if(keysPressed.contains('d') || keysPressed.contains('right')) {
+                player.move(6, 0);
+            } 
+            if(keysPressed.contains('a') || keysPressed.contains('left')) {
+                player.move(-6, 0);
+            } 
+            if(keysPressed.contains('w') || keysPressed.contains('up')) {
+                player.move(0, -6);
+            } 
+            if(keysPressed.contains('s') || keysPressed.contains('down')) {
+                player.move(0, 6);
+            }
+        } else {
+            // If any of these keys are pressed it cancels the walking.
+            if(keysPressed.contains('d') || keysPressed.contains('right') ||
+               keysPressed.contains('a') || keysPressed.contains('left') ||
+               keysPressed.contains('w') || keysPressed.contains('up') ||
+               keysPressed.contains('s') || keysPressed.contains('down')) {
+                player.walkingTo = false;
+            }
+
+            var modX   = (player.walkingTo[0] - player.pos[0]);
+            var moveX  = 0;
+            if(modX < 0.00) {
+                moveX = Math.max(-6, modX);
+            } else if (modX > 0.00) {
+                moveX = Math.min(6, modX);
+            }
+            
+            var modY   = (player.walkingTo[1] - player.pos[1]);
+            var moveY  = 0;
+            if(modY < 0.00) {
+                moveY = Math.max(-6, modY);
+            } else if (modY > 0.00) {
+                moveY = Math.min(6, modY);
+            }
+            
+            if(moveX == 0 && moveY == 0) {
+                player.walkingTo = false;
+            }
+            
+            if(!player.move(moveX, moveY)) {
+                player.walkingTo = false;
             }
         }
+    }).periodical(50);
+    
+    //-- Graphics Loop
+    (function () {
+        if(dirtRects === false) {
+            dirtRects = [];
+            for (var x = 0; x < map.length; x++) {
+                for (var y = 0; y < map[x].length; y++) {
+                    var tile = map[x][y];
+                    var img = new Image(32, 32);
+                    img.src = tile + '.png';
+                    //-- Render the tile
+                    cxt.drawImage(img, x * 32, y * 32);
+                    //-- Render the lines of the tile
+                    //Darkcore.drawLine((x * 32), (y * 32), (x * 32) + 32, (y * 32));
+                    //Darkcore.drawLine((x * 32), (y * 32), (x * 32), (y * 32) + 32);
+                }
+            }
+        } else {
+            for(var i = 0; i < dirtRects.length; i++) {
+                var hitPos = [dirtRects[i].x, dirtRects[i].y];
+                var tilePos = Darkcore.getTilePosition(hitPos);
+                var tileId = Darkcore.getTile({
+                    pos: hitPos
+                });
+                
+                var img = new Image(32, 32);
+                img.src = tileId + '.png';
+                
+                //-- Render the tile
+                //console.log(tilePos);
+                cxt.clearRect(tilePos[0] * 32, tilePos[1] * 32, 32, 32);
+                cxt.drawImage(img, tilePos[0] * 32, tilePos[1] * 32);
+                //-- Render the lines of the tile
+                //Darkcore.drawLine((x * 32), (y * 32), (x * 32) + 32, (y * 32));
+                //Darkcore.drawLine((x * 32), (y * 32), (x * 32), (y * 32) + 32);
+            }
+            dirtRects = [];
+        }
+        
         //-- Render the player after the tile
         player.render(cxt);
-    }).periodical(50);
+    }).periodical(75);
     </script>
 </body>
 </html>
