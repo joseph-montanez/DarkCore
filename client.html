@@ -22,7 +22,7 @@
 	</style>
 </head>
 <body id="body" style="width: 320px; overflow: hidden"> 
-    
+    <span id="loader"></span>
     <script type="text/javascript">
     var map = [
         [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -33,8 +33,8 @@
         [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0],
         [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
         [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
-        [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+        [0, 0, 0, 1, 1, 1, 5, 4, 1, 1, 0],
+        [0, 0, 0, 0, 1, 1, 2, 3, 0, 0, 0],
     ];
     
     var dirtRects = false;
@@ -336,16 +336,34 @@
     
     var keysPressed = [];
     
-    $(window).addEvent('keydown', function (evt) {
-        keysPressed.include(evt.key);
+    var assets = Asset.images([
+            '0.png', '1.png', '2.png', '3.png', '4.png', '5.png'
+        ], {
+        onComplete: function () {
+            Darkcore.init();
+            $('loader').dispose();
+        },
+        onProgress: function () {
+            $('loader').set('html', 'Loading...');
+        }
     });
     
-    $(window).addEvent('keyup', function (evt) {
-        keysPressed.erase(evt.key);
-    });
+    Darkcore.init = function () {
+        $(window).addEvent('keydown', function (evt) {
+            keysPressed.include(evt.key);
+        });
+        
+        $(window).addEvent('keyup', function (evt) {
+            keysPressed.erase(evt.key);
+        });
+        //-- Logic Loop
+        Darkcore.events.periodical(50);
+        
+        //-- Graphics Loop
+        Darkcore.render.periodical(75);   
+    };
     
-    //-- Logic Loop
-    (function () {
+    Darkcore.events = function () {
         if(player.walkingTo === false) {
             if(keysPressed.contains('d') || keysPressed.contains('right')) {
                 player.move(6, 0);
@@ -392,10 +410,9 @@
                 player.walkingTo = false;
             }
         }
-    }).periodical(50);
+    }
     
-    //-- Graphics Loop
-    (function () {
+    Darkcore.render = function () {
         if(dirtRects === false) {
             dirtRects = [];
             for (var x = 0; x < map.length; x++) {
@@ -423,7 +440,7 @@
                 
                 //-- Render the tile
                 //console.log(tilePos);
-                cxt.clearRect(tilePos[0] * 32, tilePos[1] * 32, 32, 32);
+                //cxt.clearRect(tilePos[0] * 32, tilePos[1] * 32, 32, 32);
                 cxt.drawImage(img, tilePos[0] * 32, tilePos[1] * 32);
                 //-- Render the lines of the tile
                 //Darkcore.drawLine((x * 32), (y * 32), (x * 32) + 32, (y * 32));
@@ -434,7 +451,8 @@
         
         //-- Render the player after the tile
         player.render(cxt);
-    }).periodical(75);
+    };
+    
     </script>
 </body>
 </html>
