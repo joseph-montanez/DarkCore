@@ -19,10 +19,127 @@
 	        border: none;
 	        outline: none;
 	    }
+	    #loader {
+	        position: absolute;
+	        top: 0px;
+	        left: 0px;
+	    }
+	    
+        .panes {
+            position:relative; 
+            margin-bottom:10px; 
+            -moz-border-radius-bottomright: 5px;
+            -webkit-border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            -moz-border-radius-bottomleft: 5px;
+            -webkit-border-bottom-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+            -moz-border-radius-topright: 5px;
+            -webkit-border-top-right-radius: 5px;
+            border-top-right-radius: 5px;
+            background: rgba(153,153,153,1);
+            -moz-box-shadow: rgba(100, 100, 100, 0.5) 0px 5px 15px;
+            -webkit-box-shadow: 0px 5px 5px rgba(100, 100, 100, 0.25);
+            box-shadow: 0px 5px 5px rgba(100, 100, 100, 0.25);
+        }
+        
+        .inactive, .active {
+            display:block; 
+            height:auto;
+            padding: 5px 20px;
+            padding-bottom: 5px;
+            text-decoration:none;
+            width:auto;
+            border-top-right-radius: 5px;
+            -moz-border-radius-topright: 5px;
+            -webkit-border-top-right-radius: 5px;
+            border-top-left-radius: 5px;
+            -moz-border-radius-topleft: 5px;
+            -webkit-border-top-left-radius: 5px;
+            opacity: 0.5;
+            font-weight: 900;
+            text-shadow: 0px 1px 1px #fff;
+            color: #333;
+            font-size: 14px;
+            text-align: center;
+            background: rgb(50,50,50);
+            background: rgba(50,50,50, 0.5);
+            background: -moz-linear-gradient(top, rgba(221,221,221, 1.0), rgba(50,50,50, 0.5));
+            background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(221,221,221, 1.0)), to(rgba(50,50,50, 0.5)));
+        }
+        .active { 
+            color: #333;
+            background: rgb(153,153,153);
+            background: rgba(153,153,153, 1);
+            background: -moz-linear-gradient(top, rgba(221,221,221, 1.0), rgba(153,153,153,1));
+            background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(221,221,221, 1.0)), to(rgba(153,153,153,1)));
+            opacity: 1.0;
+            outline: none;
+        }
+        
+        .action, a.action, .action-button, a.action-button {
+	        width: auto; 
+	        margin-top: -7px; 
+	        border-radius: 5px; 
+	        -webkit-border-radius: 5px; 
+	        -moz-border-radius: 5px; 
+	        float: right; 
+	        padding: 10px 10px; 
+	        font-size: 12px; 
+	        font-weight: 900;
+	        height: 32px; 
+	        line-height: 16px;
+	        color: #fff;
+	        border: 0;
+	        background: rgb(153,153,153);
+            background: rgba(153,153,153, 1);
+            background: -moz-linear-gradient(top, rgba(221,221,221, 1.0), rgba(153,153,153,1));
+            background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(197,127,13, 1.0)), to(rgba(236,159,3,1)));
+            cursor: pointer;
+	        text-shadow: 0px -1px 0px rgba(100,100,100, 0.5);
+	        text-decoration: none;
+        }
+
+        .action:hover, a.action:hover, .action-button, 
+        a.action-button, a.action-button:hover, .action-button:hover {
+	        background: rgb(47,136,147);
+	        background: -moz-linear-gradient(top, rgba(206,194,206, 1.0), rgba(147,136,147, 1.0));
+	        background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(206,194,206, 1.0)), to(rgba(147,136,147, 0.5)));
+        }
+
+        .action-button, a.action-button {
+            float: none;
+            display: inline-block;
+            height: 50px;
+	        line-height: 16px;
+	        margin: 0px;
+	        padding: 5px;
+	        font-size: 14px;
+        }
+        
+        input[type="text"], input[type="password"] {
+            border: 0;
+            color: #777;
+            font: normal 17px Helvetica;
+            border-radius: 5px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            
+            border-bottom-right-radius:0px;
+            -moz-border-radius-bottomright: 0px;
+            -webkit-border-bottom-right-radius: 0px;
+            
+            padding: 2px;
+        }
 	</style>
 </head>
-<body id="body" style="width: 320px; overflow: hidden"> 
-    <span id="loader"></span>
+<body id="body"> 
+    <form class="panes active" id="login" style="display: none;" onsubmit="return false">
+        <input placeholder="username" type="text" name="username" /><br />
+        <input placeholder="password" type="password" name="password" /><br />
+        <input type="submit" class="action" value="Login" />
+    </form>
+    <span class="panes active" id="loader"></span>
     <script type="text/javascript">
     var map = [
         [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -36,6 +153,13 @@
         [0, 0, 0, 1, 1, 1, 5, 4, 1, 1, 0],
         [0, 0, 0, 0, 1, 1, 2, 3, 0, 0, 0],
     ];
+    
+    var keyboardModes = {
+        GENERAL: 0,
+        FORM: 1
+    };
+    
+    var keyboardMode = keyboardModes.GENERAL; 
     
     var dirtRects = false;
     
@@ -313,12 +437,15 @@
     Darkcore.canvas.inject($(document.body));
     function clickTo (evt) {
         var coords = this.getCoordinates();
-        var x = evt.client.x - coords.left;
-        var y = evt.client.y - coords.top;
+        var x = evt.client.x;// - coords.left;
+        var y = evt.client.y;// - coords.top;
+        //$('loader').set('text', evt.type + ": " + x + " " + y);
         
         var tpos = Darkcore.getTilePosition([x, y]);
         var tx = tpos[0];
         var ty = tpos[1];
+        
+        $('loader').set('text', evt.type + ": " + tx + " " + ty);
         
         if(!Darkcore.isBlocked({
             pos: [tx * 32, ty * 32]
@@ -326,9 +453,7 @@
             player.walkingTo = [tx * 32 + 16, ty * 32 + 16];
         }
     }
-    Darkcore.canvas.addEvent('click', clickTo);
-    Darkcore.canvas.addEvent('touchmove', clickTo);
-    
+    $(document.body).addEvent('click', clickTo);
     
     Darkcore.context = Darkcore.canvas.getContext('2d');
     cxt = Darkcore.context;
@@ -341,21 +466,34 @@
         ], {
         onComplete: function () {
             Darkcore.init();
-            $('loader').dispose();
+            $('loader').empty();
         },
         onProgress: function () {
-            $('loader').set('html', 'Loading...');
+            $('loader').set('text', 'Loading...');
         }
     });
     
     Darkcore.init = function () {
         $(window).addEvent('keydown', function (evt) {
-            keysPressed.include(evt.key);
+            if(keysPressed.indexOf(evt.key) === -1 && keyboardMode === keyboardModes.GENERAL) {
+                var date = new Date().toString();
+                socket.send([evt.type, evt.key, date].join(';'));
+                keysPressed.include(evt.key);
+            } else if(keyboardMode !== keyboardModes.GENERAL) {
+                keysPressed = [];
+            }
         });
         
         $(window).addEvent('keyup', function (evt) {
-            keysPressed.erase(evt.key);
+            if(keysPressed.indexOf(evt.key) !== -1 && keyboardMode === keyboardModes.GENERAL) {
+                var date = new Date().toString();
+                socket.send([evt.type, evt.key, date].join(';'));
+                keysPressed.erase(evt.key);
+            } else if(keyboardMode !== keyboardModes.GENERAL) {
+                keysPressed = [];
+            }
         });
+        
         //-- Logic Loop
         Darkcore.events.periodical(50);
         
@@ -453,6 +591,39 @@
         player.render(cxt);
     };
     
+    var socket = new WebSocket("ws://localhost:5876/demo");
+    
+    function promptLogin() {
+        var form = $('login').clone().inject($(document.body));
+        form.setStyles({
+            display: 'block',
+            position: 'absolute',
+            top: 0,
+            left: 0
+        });
+        form.position({
+            relativeTo: Darkcore.canvas,
+            position: 'center'
+        });
+        form.addEvent('submit', function (evt) {
+            socket.send(['login', form.toQueryString()].join(';'));
+        })
+        keyboardMode = keyboardModes.FORM;
+    }
+
+    socket.onopen = function () {  
+        $('loader').set('text', "Socket has been opened!");  
+        promptLogin();
+    }; 
+    socket.onmessage = function (msg) {  
+        console.log("Messge:",  msg.data); //Awesome! 
+        if(msg.data === 'login') {
+            promptLogin();
+        } 
+    };
+    socket.onclose = function () {
+        console.log("Socket has been closed");
+    };
     </script>
 </body>
 </html>
